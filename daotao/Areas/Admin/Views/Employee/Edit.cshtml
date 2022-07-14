@@ -1,0 +1,209 @@
+﻿@{
+    ViewData["Title"] = "Edit";
+    Layout = "~/Views/Shared/_Admin.cshtml";
+    var daotao = ViewData["daotao"];
+}
+<div class="row clearfix">
+    <div class="col-12">
+        <form method="POST" id="form" autocomplete="on" novalidate="novalidate">
+            <section class="card card-fluid">
+                <div class="card-header">
+                    <div class="d-inline-block w-100">
+                        <button type="submit" name="dangtin" class="btn btn-sm btn-primary float-right">Cập nhật</button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="form-group row">
+                        <div class="col-lg-3 mt-2">
+                            <b class="col-form-label">Họ và tên:<span class="text-danger">*</span></b>
+                            <div class="pt-1">
+                                <input class="form-control form-control-sm" type='text' name="fullName" required="" autocomplete="off" />
+                            </div>
+                        </div>
+                        <div class="col-lg-3 mt-2">
+                            <b class="col-form-label">Mã số nhân viên:</b>
+                            <div class="pt-1">
+                                <input class="form-control form-control-sm" type='text' name="msnv" autocomplete="off" />
+                            </div>
+                        </div>
+                        <div class="col-lg-3 mt-2">
+                            <b class="col-form-label">Ngày tháng năm sinh:</b>
+                            <div class="pt-1">
+                                <input class="form-control form-control-sm" type='date' name="birthday" autocomplete="off" />
+                            </div>
+                        </div>
+                        <div class="col-lg-3 mt-2">
+                            <b class="col-form-label">Ngày vào làm:</b>
+                            <div class="pt-1">
+                                <input class="form-control form-control-sm" type='date' name="date_work" autocomplete="off" />
+                            </div>
+                        </div>
+                        <div class="col-lg-3 mt-2">
+                            <b class="col-form-label">Trình độ chuyên môn:</b>
+                            <div class="pt-1">
+                                <input class="form-control form-control-sm" type='text' name="education" autocomplete="off" />
+                            </div>
+                        </div>
+                        <div class="col-lg-3 mt-2">
+                            <b class="col-form-label">Tổ công việc:</b>
+                            <div class="pt-1">
+                                <input class="form-control form-control-sm" type='text' name="work_group" autocomplete="off" />
+                            </div>
+                        </div>
+                        <div class="col-lg-3 mt-2">
+                            <b class="col-form-label">Chức vụ:</b>
+                            <div class="pt-1">
+                                <input class="form-control form-control-sm" type='text' name="position" autocomplete="off" />
+                            </div>
+                        </div>
+                        <div class="col-lg-3 mt-2">
+                            <b class="col-form-label">Email:</b>
+                            <div class="pt-1">
+                                <input class="form-control form-control-sm" type='email' name="email" autocomplete="off" />
+                            </div>
+                        </div>
+                        <div class="col-lg-12 mt-2">
+                            <b class="col-form-label">Công việc phụ trách:</b>
+                            <div class="pt-1">
+                                @Html.DropDownList("workgroups[]", (IEnumerable<SelectListItem>)ViewData["workgroups"], new { multiple = "true",
+                                data_placeholder = "Nhóm công việc",@class="chosen form-control form-control-sm" })
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </form>
+
+        <section>
+            <h5>SOP cần đào tạo</h5>
+            <div class="row" id="list_procedure">
+            </div>
+        </section>
+    </div>
+</div>
+
+<template id="template_procedure">
+    <div class="col-md-4 procedure" data-id="{{id}}">
+        <div class="card">
+            <div class="card-header bg-danger text-white">
+                <div>
+                    {{code}} - {{name}}
+                    <span class="showhide-arrow"><i class="mdi mdi-chevron-down"></i></span>
+                </div>
+            </div>
+            <div class="card-body">
+                <ul class="list_version m-0">
+                </ul>
+            </div>
+        </div>
+    </div>
+</template>
+<template id="template_version">
+
+    <li class="version {{^need_train}}no_need{{/need_train}}">
+
+        {{#is_success}}
+        <span class="status text-success"><i class="fas fa-check-circle"></i></span>
+        {{/is_success}}
+        {{^is_success}}
+        <span class="status text-danger"><i class="fas fa-ban"></i></span>
+        {{/is_success}}
+
+        {{code}} - {{name}}
+    </li>
+</template>
+
+@section Scripts {
+    @{
+    await Html.RenderPartialAsync("_ValidationScriptsPartial");
+}
+<script type="text/javascript">
+    var data = @Html.Raw(Json.Serialize(Model));
+    var daotao = @Html.Raw(Json.Serialize(daotao));
+    daotao = daotao.map(function(item){
+        return item['procedure_version_id'];
+    });
+    if (data.workgroups) {
+         data.workgroups = data.workgroups.map(function(item){
+            // item chính là phần tử đang lặp
+            return item['workgroup_id']; // giá trị trả về sẽ thay thế cho giá trị ban đầu của phần tử
+        });
+    }
+    function addprocedure(item){
+        var template = $("#template_procedure").html();
+        var rendered = Mustache.render(template, item);
+        $("#list_procedure").append(rendered);
+
+        var versions = item.versions;
+        for(var version of versions){
+            addversion(version);
+        }
+    }
+    function addversion(item){
+        var procedure_id = item.procedure_id;
+        var parent = $(".procedure[data-id='"+procedure_id+"']");
+
+        var id = item.id;
+        if(daotao.indexOf(id) != -1){
+            item.is_success = true;
+        }
+
+        var template = $("#template_version").html();
+        var rendered = Mustache.render(template, item);
+        $(".list_version",parent).append(rendered);
+
+    }
+    function check_procedure(){
+        $(".procedure").each(function(){
+            var last = $(".version:not(.no_need):last",$(this));
+            var is_success = $(".status",last).hasClass("text-success");
+            console.log(last.nextAll());
+            var next = last.nextAll();
+            if(is_success){
+                $(".status",next).removeClass("text-danger").addClass("text-success").html('<i class="fas fa-check-circle"></i></span>');
+                $(".card-header",$(this)).removeClass("bg-danger").addClass("bg-success");
+            }else{
+                 $(".card-header",$(this)).addClass("bg-danger").removeClass("bg-success");
+            }
+        });
+    }
+    $(document).ready(function(){
+
+        fillForm($("#form"),data);
+        $("[name='workgroups[]']").change(function(){
+            var val = $(this).val();
+            $.ajax({
+                url:"/admin/employee/getprocedure",
+                data:{
+                    workgroups:val
+                },
+                type:"POST",
+                dataType:"JSON",
+                success:function(res){
+                    if(res.success){
+                        var items = res.items;
+                        $("#list_procedure").empty();
+                        for(var item of items){
+                            var procedure = item.value.procedure;
+                            addprocedure(procedure);
+                        }
+                        check_procedure();
+                    }
+                }
+            })
+        }).trigger("change");
+        $(document).on("click",".showhide-arrow",function(){
+            var parent = $(this).closest(".procedure");
+            var is_hide = $(this).hasClass("arrow_hide");
+            if(is_hide){
+                $(this).html('<i class="mdi mdi-chevron-down"></i>');
+            }else{
+                $(this).html('<i class="mdi mdi-chevron-right"></i>');
+            }
+            $(".card-body",parent).toggleClass("d-none");
+            $(this).toggleClass("arrow_hide");
+        });
+    })
+
+</script>
+}
