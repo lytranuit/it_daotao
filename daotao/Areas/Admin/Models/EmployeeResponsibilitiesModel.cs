@@ -4,17 +4,17 @@ using System.Text.Json.Serialization;
 
 namespace it.Areas.Admin.Models
 {
-    [Table("tbl_employee_workgroup")]
-    public class EmployeeWorkgroupModel
+    [Table("tbl_employee_responsibilities")]
+    public class EmployeeResponsibilitiesModel
     {
         [Key]
         public int id { get; set; }
 
-        public int workgroup_id { get; set; }
-        [ForeignKey("workgroup_id")]
-        public WorkgroupModel workgroup { get; set; }
+        public string? content { get; set; }
+        public string? content_en { get; set; }
 
         public int employee_id { get; set; }
+        [JsonIgnore]
         [ForeignKey("employee_id")]
         public EmployeeModel employee { get; set; }
     }

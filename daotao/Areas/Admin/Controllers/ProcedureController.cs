@@ -74,7 +74,7 @@ namespace it.Areas.Admin.Controllers
                 }
 
             }
-            return Ok();
+            return Ok(ModelState);
         }
 
 
@@ -110,6 +110,9 @@ namespace it.Areas.Admin.Controllers
 
             var ProcedureModel_old = await _context.ProcedureModel.FindAsync(id);
             ProcedureModel_old.updated_at = DateTime.Now;
+            ProcedureModel_old.type = ProcedureModel.type;
+            ProcedureModel_old.frequency = ProcedureModel.frequency;
+            //ProcedureModel_old.type = 
             //return Ok(ProcedureModel);
             foreach (string key in HttpContext.Request.Form.Keys)
             {
@@ -150,6 +153,11 @@ namespace it.Areas.Admin.Controllers
                             DateTime.TryParse(temp, out DateTime val);
                             prop.SetValue(ProcedureModel_old, val);
                         }
+                    }
+                    else if (type == typeof(List<string>))
+                    {
+                        var list = Request.Form[key].ToList();
+                        prop.SetValue(ProcedureModel_old, list);
                     }
                 }
             }
@@ -404,7 +412,7 @@ namespace it.Areas.Admin.Controllers
                 var lastrow = sheet.LastRowNum;
                 // nếu vẫn chưa gặp end thì vẫn lấy data
                 Console.WriteLine(lastrow);
-                for (int rowIndex = 4; rowIndex < lastrow; rowIndex++)
+                for (int rowIndex = 2; rowIndex < lastrow; rowIndex++)
                 {
                     // lấy row hiện tại
                     var nowRow = sheet.GetRow(rowIndex);
@@ -418,6 +426,7 @@ namespace it.Areas.Admin.Controllers
                     var cellname = nowRow.GetCell(2);
                     var celldate_approve = nowRow.GetCell(3);
                     var celldate_effect = nowRow.GetCell(4);
+                    var celldepartment = nowRow.GetCell(13);
                     if (cellname == null || cellSOP == null)
                     {
                         continue;
@@ -426,6 +435,7 @@ namespace it.Areas.Admin.Controllers
                     var name = "";
                     var date_approve = new DateTime();
                     var date_effect = new DateTime();
+                    var department_name = "";
                     if (cellSOP.CellType == CellType.String)
                     {
                         SOP = cellSOP.StringCellValue;
@@ -441,6 +451,20 @@ namespace it.Areas.Admin.Controllers
                     else if (cellname.CellType == CellType.Numeric)
                     {
                         name = cellname.NumericCellValue.ToString();
+                    }
+
+
+                    if (celldepartment.CellType == CellType.String)
+                    {
+                        department_name = celldepartment.StringCellValue;
+                    }
+                    else if (celldepartment.CellType == CellType.Numeric)
+                    {
+                        department_name = celldepartment.NumericCellValue.ToString();
+                    }
+                    else if (celldepartment.CellType == CellType.Formula)
+                    {
+                        department_name = celldepartment.CellFormula;
                     }
                     if (name == "" || SOP == "")
                     {
@@ -492,8 +516,13 @@ namespace it.Areas.Admin.Controllers
                     Console.WriteLine("name: {0} ", name_vn);
                     Console.WriteLine("date approve: {0} ", date_approve.ToString("yyyy-MM-dd"));
                     Console.WriteLine("date effect: {0} ", date_effect.ToString("yyyy-MM-dd"));
+                    Console.WriteLine("department: {0} ", department_name);
 
-                    ProcedureModel ProcedureModel = new ProcedureModel { code = code, name = name_vn, created_at = DateTime.Now };
+                    ProcedureModel ProcedureModel = new ProcedureModel { code = code, name = name_vn, name_en = name_en, created_at = DateTime.Now };
+
+                    var department = _context.DepartmentModel.Where(d => d.symbol == department_name).FirstOrDefault();
+                    if (department != null)
+                        ProcedureModel.department_id = department.id;
                     _context.Add(ProcedureModel);
                     _context.SaveChanges();
 
@@ -502,6 +531,7 @@ namespace it.Areas.Admin.Controllers
                         code = SOP,
                         version = version,
                         name = name_vn,
+                        name_en = name_en,
                         procedure_id = ProcedureModel.id,
                         date_approve = date_approve,
                         date_effect = date_effect,
@@ -513,6 +543,21 @@ namespace it.Areas.Admin.Controllers
                 }
             }
             return Ok(1);
+        }
+        [HttpPost]
+        public async Task<JsonResult> get(int id)
+        {
+            try
+            {
+                var procedure = _context.ProcedureModel.Where(d => d.id == id).Include(d => d.versions).FirstOrDefault();
+
+                return Json(new { success = true, procedure = procedure });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false });
+            }
+
         }
     }
 }

@@ -15,6 +15,10 @@ namespace it.Data
         public DbSet<UserModel> UserModel { get; set; }
         public DbSet<DocumentModel> DocumentModel { get; set; }
         public DbSet<EmployeeModel> EmployeeModel { get; set; }
+        public DbSet<EmployeeJobPreviousModel> EmployeeJobPreviousModel { get; set; }
+        public DbSet<EmployeeResponsibilitiesModel> EmployeeResponsibilitiesModel { get; set; }
+        public DbSet<EmployeeReplaceModel> EmployeeReplaceModel { get; set; }
+        public DbSet<EmployeeReportModel> EmployeeReportModel { get; set; }
         public DbSet<EmployeeWorkgroupModel> EmployeeWorkgroupModel { get; set; }
         public DbSet<RecordModel> RecordModel { get; set; }
         public DbSet<RecordTrainModel> RecordTrainModel { get; set; }
@@ -29,7 +33,8 @@ namespace it.Data
             //modelBuilder.Entity<IdentityUser>().ToTable("AspNetUsers");
 
             //modelBuilder.Entity<DocumentModel>().HasMany(l => l.Teams).WithOne().HasForeignKey("LeagueId");
-
+            modelBuilder.Entity<DocumentModel>()
+             .Property(b => b._data).HasColumnName("data");
         }
         protected override void ConfigureConventions(ModelConfigurationBuilder builder)
         {

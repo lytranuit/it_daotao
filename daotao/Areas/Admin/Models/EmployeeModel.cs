@@ -12,15 +12,21 @@ namespace it.Areas.Admin.Models
         public string FullName { get; set; }
         public string? msnv { get; set; }
         public string? position { get; set; }
+        public string? position_en { get; set; }
         public string? work_group { get; set; }
+        public string? work_group_en { get; set; }
         public string? education { get; set; }
+        public string? education_en { get; set; }
         public int? version { get; set; }
         public int department_id { get; set; }
         [ForeignKey("department_id")]
         public virtual DepartmentModel? department { get; set; }
 
-
         public virtual List<EmployeeWorkgroupModel> workgroups { get; set; }
+        public virtual List<EmployeeReplaceModel> replace_to { get; set; }
+        public virtual List<EmployeeReportModel> report_to { get; set; }
+        public virtual List<EmployeeResponsibilitiesModel> responsibilities { get; set; }
+        public virtual List<EmployeeJobPreviousModel> job_previous { get; set; }
 
         [DataType(DataType.Date), DisplayFormat(DataFormatString = "{0:yyyy-MM-dd}")]
         public DateTime? date_work { get; set; }

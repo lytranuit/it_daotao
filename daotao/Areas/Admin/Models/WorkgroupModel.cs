@@ -9,6 +9,7 @@ namespace it.Areas.Admin.Models
         public int id { get; set; }
 
         public string name { get; set; }
+        public string? name_en { get; set; }
         public int department_id { get; set; }
 
 

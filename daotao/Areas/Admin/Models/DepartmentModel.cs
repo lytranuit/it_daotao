@@ -9,6 +9,8 @@ namespace it.Areas.Admin.Models
         public int id { get; set; }
 
         public string name { get; set; }
+        public string? name_en { get; set; }
+        public string? symbol { get; set; }
         public DateTime? created_at { get; set; }
 
         public DateTime? updated_at { get; set; }

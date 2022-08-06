@@ -1,13 +1,14 @@
 ﻿@{
     ViewData["Title"] = "Index";
     Layout = "~/Views/Shared/_Admin.cshtml";
+    var create = "create" + ViewData["type"];
 }
 
 <div class="row clearfix">
     <div class="col-12">
         <section class="card card-fluid">
             <h5 class="card-header drag-handle">
-                <a class="btn btn-success btn-sm text-white" href="/admin/Document/createJD">Thêm</a>
+                <a class="btn btn-success btn-sm text-white" href="/admin/Document/@create">Thêm</a>
             </h5>
             <div class="card-body">
                 <div class="table-responsive-md">
@@ -31,6 +32,7 @@
 
 @section Scripts{
 <script type='text/javascript'>
+    var type = '@ViewData["type"]';
     $(document).ready(function() {
         let table = $('#quanlytin').DataTable({
             "stateSave": true,
@@ -42,6 +44,15 @@
                 "dataType": "json",
                 "type": "POST",
                 'data': function(data) {
+                    if(type == "jd"){
+                        data['type_id'] = 1;
+                    }else if(type== "tp"){
+                        data['type_id'] = 2;
+                    }else if(type== "tm"){
+                        data['type_id'] = 3;
+                    }else if(type== "el"){
+                        data['type_id'] = 6;
+                    }
                 }
             },
             "columns": [ {

@@ -44,30 +44,26 @@ namespace it.Areas.Admin.Controllers
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
-        public async Task<IActionResult> Create(WorkgroupModel WorkgroupModel, List<int> procedures)
+        public async Task<IActionResult> Create(WorkgroupModel WorkgroupModel, List<int>? procedures)
         {
-            if (ModelState.IsValid)
+            System.Security.Claims.ClaimsPrincipal currentUser = this.User;
+            var user = await UserManager.GetUserAsync(currentUser); // Get usee
+            WorkgroupModel.department_id = (int)user.department_id;
+            WorkgroupModel.created_at = DateTime.Now;
+            _context.Add(WorkgroupModel);
+            await _context.SaveChangesAsync();
+            if (procedures != null)
             {
-
-                System.Security.Claims.ClaimsPrincipal currentUser = this.User;
-                var user = await UserManager.GetUserAsync(currentUser); // Get usee
-                WorkgroupModel.department_id = (int)user.department_id;
-                WorkgroupModel.created_at = DateTime.Now;
-                _context.Add(WorkgroupModel);
-                await _context.SaveChangesAsync();
-                if (procedures != null)
+                foreach (var sop_id in procedures)
                 {
-                    foreach (var sop_id in procedures)
-                    {
-                        WorkgroupProcedureModel WorkgroupProcedureModel = new WorkgroupProcedureModel() { workgroup_id = WorkgroupModel.id, procedure_id = sop_id };
-                        _context.Add(WorkgroupProcedureModel);
-                    }
-
-                    await _context.SaveChangesAsync();
+                    WorkgroupProcedureModel WorkgroupProcedureModel = new WorkgroupProcedureModel() { workgroup_id = WorkgroupModel.id, procedure_id = sop_id };
+                    _context.Add(WorkgroupProcedureModel);
                 }
-                return RedirectToAction(nameof(Index));
+
+                await _context.SaveChangesAsync();
             }
-            return Ok(ModelState);
+            return RedirectToAction(nameof(Index));
+            //return Ok(ModelState);
         }
 
         // GET: Admin/Workgroup/Edit/5
@@ -99,7 +95,7 @@ namespace it.Areas.Admin.Controllers
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
-        public async Task<IActionResult> Edit(int id, WorkgroupModel WorkgroupModel, List<int> procedures)
+        public async Task<IActionResult> Edit(int id, WorkgroupModel WorkgroupModel, List<int>? procedures)
         {
 
             if (id != WorkgroupModel.id)
@@ -107,50 +103,40 @@ namespace it.Areas.Admin.Controllers
                 return NotFound();
             }
 
-            if (ModelState.IsValid)
+            var WorkgroupModel_old = await _context.WorkgroupModel.FindAsync(id);
+            WorkgroupModel_old.updated_at = DateTime.Now;
+
+            foreach (string key in HttpContext.Request.Form.Keys)
             {
-                try
+                var prop = WorkgroupModel_old.GetType().GetProperty(key);
+
+                dynamic val = Request.Form[key].FirstOrDefault();
+
+                if (prop != null)
                 {
-                    var WorkgroupModel_old = await _context.WorkgroupModel.FindAsync(id);
-                    WorkgroupModel_old.updated_at = DateTime.Now;
-
-                    foreach (string key in HttpContext.Request.Form.Keys)
-                    {
-                        var prop = WorkgroupModel_old.GetType().GetProperty(key);
-
-                        dynamic val = Request.Form[key].FirstOrDefault();
-
-                        if (prop != null)
-                        {
-                            prop.SetValue(WorkgroupModel_old, val);
-                        }
-                    }
-                    _context.Update(WorkgroupModel_old);
-                    await _context.SaveChangesAsync();
-
-                    //procedures
-                    /////XÓA và edit lại
-                    var WorkgroupProcedureModel_old = _context.WorkgroupProcedureModel.Where(d => d.workgroup_id == id).ToList();
-                    _context.RemoveRange(WorkgroupProcedureModel_old);
-                    await _context.SaveChangesAsync();
-                    if (procedures != null && procedures.Count > 0)
-                    {
-                        foreach (var sop_id in procedures)
-                        {
-                            WorkgroupProcedureModel WorkgroupProcedureModel = new WorkgroupProcedureModel() { workgroup_id = id, procedure_id = sop_id };
-                            _context.Add(WorkgroupProcedureModel);
-                        }
-
-                        await _context.SaveChangesAsync();
-                    }
+                    prop.SetValue(WorkgroupModel_old, val);
                 }
-                catch (DbUpdateConcurrencyException)
-                {
-
-                }
-                return RedirectToAction(nameof(Index));
             }
-            return View(WorkgroupModel);
+            _context.Update(WorkgroupModel_old);
+            await _context.SaveChangesAsync();
+
+            //procedures
+            /////XÓA và edit lại
+            var WorkgroupProcedureModel_old = _context.WorkgroupProcedureModel.Where(d => d.workgroup_id == id).ToList();
+            _context.RemoveRange(WorkgroupProcedureModel_old);
+            await _context.SaveChangesAsync();
+            if (procedures != null && procedures.Count > 0)
+            {
+                foreach (var sop_id in procedures)
+                {
+                    WorkgroupProcedureModel WorkgroupProcedureModel = new WorkgroupProcedureModel() { workgroup_id = id, procedure_id = sop_id };
+                    _context.Add(WorkgroupProcedureModel);
+                }
+
+                await _context.SaveChangesAsync();
+            }
+
+            return RedirectToAction(nameof(Index));
         }
 
 

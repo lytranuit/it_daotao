@@ -13,17 +13,10 @@
                 </div>
                 <div class="card-body">
                     <div class="form-group row justify-content-center">
-                        <div class="col-lg-6 mt-2">
-                            <b class="col-form-label">Nhân viên:</b>
-                            <div class="pt-1">
-                                @Html.DropDownList("employee_id", (IEnumerable<SelectListItem>)ViewData["employee"], new {
-                                data_placeholder = "Select",@class="chosen form-control form-control-sm",@required="true" })
-                            </div>
-                        </div>
                         <div class="col-lg-3 mt-2">
                             <b class="col-form-label">Ấn bản:</b>
                             <div class="pt-1">
-                                <input class="form-control form-control-sm" name="version" type="number" placeholder="Ấn bản" required/>
+                                <input class="form-control form-control-sm" name="version" type="text" placeholder="Ấn bản" required />
                             </div>
                         </div>
                     </div>
@@ -37,4 +30,5 @@
     @{
     await Html.RenderPartialAsync("_ValidationScriptsPartial");
 }
+
 }

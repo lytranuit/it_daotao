@@ -361,3 +361,5 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+daotao/private/excel/tp/
+daotao/private/word/jd/

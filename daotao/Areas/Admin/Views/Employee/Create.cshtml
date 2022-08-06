@@ -133,7 +133,7 @@
         $("[name='workgroups[]']").change(function(){
             var val = $(this).val();
             $.ajax({
-                url:"/admin/employee/getprocedure",
+                url:"/admin/employee/getprocedurebyworkgroups",
                 data:{
                     workgroups:val
                 },
